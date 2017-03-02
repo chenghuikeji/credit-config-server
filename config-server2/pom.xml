@@ -4,24 +4,27 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.chenghui</groupId>
-	<artifactId>credit</artifactId>
+	<artifactId>credit-config-server</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>config-server2</name>
+	<name>credit-config-server</name>
 	<description>Demo project for Spring Cloud Config</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.1.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+
+		<docker.repostory>docker.repo:5000</docker.repostory>
+		<docker.registry.name>credit</docker.registry.name>
 	</properties>
 
 	<dependencies>
@@ -50,10 +53,77 @@
 	</dependencyManagement>
 
 	<build>
+		<!-- <resources>使用@@站位符，输出Dockerfile至docker文件夹 <resource> <directory>src/main/docker</directory> 
+			<filtering>true</filtering> <includes> <include>**/Dockerfile</include> </includes> 
+			<targetPath>../docker</targetPath> </resource> </resources> -->
 		<plugins>
+			<!-- 置顶 -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- 增加docker配置 -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.13</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>tag-image</id>
+						<phase>package</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>${docker.registry.name}/${project.artifactId}:${project.version}</image>
+							<newName>${docker.repostory}/${docker.registry.name}/${project.artifactId}:${project.version}</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>${docker.repostory}/${docker.registry.name}/${project.artifactId}:${project.version}</imageName>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- <serverId>docker-aliyun</serverId>
+                    <registryUrl>registry.cn-hangzhou.aliyuncs.com</registryUrl> -->
+					<!-- 镜像名称 -->
+					<imageName>${docker.registry.name}/${project.artifactId}:${project.version}</imageName>
+					<!-- Dockerfile位置 -->
+					<!-- <dockerDirectory>src/main/docker</dockerDirectory> -->
+					<dockerDirectory>target/docker</dockerDirectory>
+					<!--install阶段也上传，否则只有deploy阶段上传 -->
+					<pushImage>false</pushImage>
+					<!-- resources 指那些需要和 Dockerfile 放在一起，在构建镜像时使用的文件，一般应用 jar 包需要纳入。 -->
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+						<!-- 输出Dockerfile至docker文件夹,如果不使用占位符,可使用以下配置 -->
+						<resource>
+							<directory>src/main/docker</directory>
+							<filtering>true</filtering>
+							<includes>
+								<include>**/Dockerfile</include>
+							</includes>
+							<targetPath>../docker</targetPath>
+						</resource>
+					</resources>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
