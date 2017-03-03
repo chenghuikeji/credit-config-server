@@ -23,7 +23,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 
-		<docker.repostory>docker.repo:5000</docker.repostory>
+		<!-- <docker.repostory>docker.repo:5000</docker.repostory> -->
+		<docker.repostory>docker.repo-ali:5000</docker.repostory>
 		<docker.registry.name>credit</docker.registry.name>
 	</properties>
 
@@ -37,6 +38,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
 	</dependencies>
 
